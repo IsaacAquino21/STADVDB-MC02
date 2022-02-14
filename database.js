@@ -1,22 +1,24 @@
-const { createPool } = require('mysql');
-
+const { createPool } = require('mysql2');
 const pool = createPool ({
-    host: "localhost",
-    port: "3310",
-    user: "root",
-    password: "12345",
-    database: "imdb_import",
+    host: "mco2-node2.mysql.database.azure.com",
+    port: "3306",
+    user: "MC02GRP21",
+    password: "Password!",
+    database: "node2_db",
     connectionLimit: 10
 })
 
-// Enter Query Here
-pool.query(`SELECT * FROM movies WHERE id < 99`,
-    
-    (err, result, fields) => {
-        if (err) {
-            return console.log(err);
-        }
-        return console.log(result);
-})
+const db = {
+    getAll: (query, callback = null) => {
+        pool.query(query, (err, result, fields) => {
+            if(err) {
+                return console.log(err)
+            }
 
-module.exports = pool;
+            callback(result)
+        })
+    }
+}
+
+
+module.exports = db;

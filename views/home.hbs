@@ -1,4 +1,4 @@
-<!-- Modal -->
+{{!-- <!-- Modal -->
 <div class="modal fade" id="product_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -99,4 +99,9 @@
 
 </div>
 
-{{> toasts-admin}}
+{{> toasts-admin}} --}}
+<div class="container">
+    {{#each dataDB}}
+        {{> try}}
+    {{/each}}
+</div>
