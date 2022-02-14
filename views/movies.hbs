@@ -1,0 +1,72 @@
+    <!-- Side-Nav -->
+    <div class="side-navbar d-flex justify-content-between flex-wrap flex-column" id="sidebar">
+        <ul class="nav flex-column text-white w-100">
+            <a href="#" class="nav-link h3 text-white my-2">
+                MC02 Application
+            </a>
+            <a href="/movies" class="nav-link text-white">
+                <li>
+                    <i class='bx bxs-camera-movie'></i>
+                    <span class="mx-2">Movies</span>
+                </li>
+            </a>
+
+            <a href="/Reports" class="nav-link text-white">
+                <li>
+                    <i class="bx bx-receipt"></i>
+                    <span class="mx-2">Reports</span>
+                </li>
+            </a>
+
+            <a href="/Search" class="nav-link text-white">
+                <li>
+                    <i class='bx bx-search-alt-2'></i>
+                    <span class="mx-2">Search</span>
+                </li>
+            </a>
+
+        </ul>
+    </div>
+
+    <!-- Main Wrapper -->
+    <div class="p-1 my-container">
+        <!-- Top Nav -->
+        <nav class="navbar top-navbar navbar-light bg-white px-5 sticky-top">
+            <a class="btn border-0" id="menu-btn"><i class="bx bx-menu"></i></a>
+        </nav>
+        <!--End Top Nav -->
+
+        <h1 class="h1 text-center">All Movies</h1>
+        <div class="container-lg mb-2 my-5">
+            <table class="table table-fluid table-striped" id="movies-table">
+                <thead class="table table-fluid">
+                    <tr>
+                        <th>Movie Id</th>
+                        <th>Movie Name</th>
+                        <th>View</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <!--Insert Entries here-->
+                    {{#each dataDB}}
+                    {{> movie-item}}
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="toast-container position-fixed top-0 end-0 p-3" id="toast-container"
+            style="z-index: 1090; visibility: hidden;">
+            <!-- Then put toasts within -->
+            <div class="toast align-items-center" id="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body" id="toast-body">
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+
+    </div>
