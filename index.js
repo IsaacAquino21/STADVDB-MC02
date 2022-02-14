@@ -5,6 +5,7 @@ const path = require('path');
 const exphbs = require('express-handlebars');
 const cors = require('cors')
 const bodyParser = require('body-parser');
+const mysql = require('mysql2')
 
 const hbs = exphbs.create({
     defaultLayout: 'main',
