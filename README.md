@@ -1,4 +1,4 @@
-# STADVDB-MC02
-MCO2: Transaction Management
+# stadvdb-mco2
 
-Created by: Emanuel Isaac M. Aquino and Carl Justin C. Dela Cruz
+1. cmd and `npm install`
+2. and `npm run dev`

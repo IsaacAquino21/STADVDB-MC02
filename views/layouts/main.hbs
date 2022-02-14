@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+
+        <title>{{title}}</title>
+        <link rel="shortcut icon" type="image/jpg" href=""/>
+
+        <base href="/">
+        
+        {{!-- Bootstrap Library --}}
+        <link rel="stylesheet" type="text/css" href="/bootstrap-5.0.2-dist/css/bootstrap.min.css">
+        {{!-- Fontawesome Library --}}
+        {{#each styles}}
+        <link rel="stylesheet" type="text/css" href="/css/{{this}}.css">
+        {{/each}}
+    </head>
+    <body>
+        
+        {{{body}}}
+        {{!-- Bootstrap --}}
+        <script src="./bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
+        {{!-- JQuery --}}
+        <script src="/scripts/jquery-3.6.0.min.js"></script>
+        {{#each scripts}}
+        <script type="text/javascript" src="/scripts/{{this}}.js"></script>
+        {{/each}}
+    </body>
+</html>
