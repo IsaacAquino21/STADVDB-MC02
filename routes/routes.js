@@ -7,5 +7,6 @@ const app = express();
 app.set('views', path.join(__dirname, '../views'));
 
 app.get('/', controller.getHome)
+app.get('/movies', controller.getMovies)
 
 module.exports = app;
