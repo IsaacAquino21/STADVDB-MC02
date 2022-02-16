@@ -36,7 +36,8 @@
         </nav>
         <!--End Top Nav -->
 
-        <h1 class="h1 text-center">All Movies</h1>
+        <h1 class="h1 text-center mb-2">All Movies</h1>
+        <h2 class="h2 text-center mb-2">Movies released before 1980</h2>
         <div class="container-lg mb-2 my-5">
             <table class="table table-fluid table-striped" id="movies-table">
                 <thead class="table table-fluid">
@@ -49,7 +50,27 @@
 
                 <tbody>
                     <!--Insert Entries here-->
-                    {{#each dataDB}}
+                    {{#each dataDB1}}
+                        {{> movie-item}}
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="h2 text-center mb-2">Movies released 1980 onwards</h2>
+        <div class="container-lg mb-2 my-5">
+            <table class="table table-fluid table-striped" id="movies-table2">
+                <thead class="table table-fluid">
+                    <tr>
+                        <th>Movie Id</th>
+                        <th>Movie Name</th>
+                        <th>View</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <!--Insert Entries here-->
+                    {{#each dataDB2}}
                         {{> movie-item}}
                     {{/each}}
                 </tbody>
