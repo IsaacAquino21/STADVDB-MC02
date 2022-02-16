@@ -1,0 +1,131 @@
+<!-- Modal -->
+<div class="modal fade" id="edit_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Movie Info</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <h3 class="h3 me-4" style="display: inline;">Movie Id:</h3>
+                        <h4 class="h4" id="movie-id" style="display: inline;">{{dataDB.id}}</h4>
+                    </div>
+                    <div class="mb-3">
+                        <label for="movie-name" class="col-form-label">Movie Name</label>
+                        <input type="text" class="form-control" id="movie-name">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="movie-year" class="col-form-label">Movie Year</label>
+                        <input type="text" class="form-control" id="movie-year">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="movie-rank" class="col-form-label">Movie Rank</label>
+                        <input type="text" class="form-control" id="movie-rank">
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="submit-discount-btn">Update
+                    Info</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- Side-Nav -->
+<div class="side-navbar d-flex justify-content-between flex-wrap flex-column" id="sidebar">
+    <ul class="nav flex-column text-white w-100">
+        <a href="#" class="nav-link h3 text-white my-2">
+            MC02 Application
+        </a>
+        <a href="/movies" class="nav-link text-white">
+            <li>
+                <i class='bx bxs-camera-movie'></i>
+                <span class="mx-2">Movies</span>
+            </li>
+        </a>
+
+        <a href="/Reports" class="nav-link text-white">
+            <li>
+                <i class="bx bx-receipt"></i>
+                <span class="mx-2">Reports</span>
+            </li>
+        </a>
+
+        <a href="/Search" class="nav-link text-white">
+            <li>
+                <i class='bx bx-search-alt-2'></i>
+                <span class="mx-2">Search</span>
+            </li>
+        </a>
+
+    </ul>
+</div>
+
+<!-- Main Wrapper -->
+<div class="p-1 my-container">
+    <!-- Top Nav -->
+    <nav class="navbar top-navbar navbar-light bg-white px-5 sticky-top">
+        <a class="btn border-0" id="menu-btn"><i class="bx bx-menu"></i></a>
+    </nav>
+    <!--End Top Nav -->
+    <h1 class="h1 text-center mb-5">Movie Information</h1>
+    <div class="container-lg mb-2 my-5">
+        <table class="table table-striped" id="movies-table">
+            <thead class="table table-fluid">
+                <tr>
+                    <th>Movie Id</th>
+                    <th>Movie Name</th>
+                    <th>Movie Year</th>
+                    <th>Movie Rating/Rank</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr id="{{dataDB.id}}">
+                    <td>
+                        <h3 class="movie-id">{{dataDB.id}}</h3>
+                    </td>
+                    <td>
+                        <h3 class="movie-name">{{dataDB.name}}</h3>
+                    </td>
+                    <td>
+                        <h3 class="movie-year">{{dataDB.year}}</h3>
+                    </td>
+                    <td>
+                        <h3 class="movie-rank">{{dataDB.rank}}</h3>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="container-lg mb-2 my-5 text-center">
+        <button type="button" class="btn btn-primary btn-lg mx-4" id="update-movie-btn" data-bs-toggle="modal"
+            data-bs-target="#edit_modal" data-id="{{dataDB.id}}">Update
+            Info</button>
+
+        <button type="button" class="btn btn-danger btn-lg mx-4" id="delete-movie-btn">Delete
+            Movie</button>
+    </div>
+
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toast-container"
+        style="z-index: 1090; visibility: hidden;">
+        <!-- Then put toasts within -->
+        <div class="toast align-items-center" id="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toast-body">
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+</div>

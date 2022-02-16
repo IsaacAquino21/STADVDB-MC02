@@ -1,0 +1,96 @@
+<!-- Side-Nav -->
+    <div class="side-navbar d-flex justify-content-between flex-wrap flex-column" id="sidebar">
+        <ul class="nav flex-column text-white w-100">
+            <a href="#" class="nav-link h3 text-white my-2">
+                MC02 Application
+            </a>
+            <a href="/movies" class="nav-link text-white">
+                <li>
+                    <i class='bx bxs-camera-movie'></i>
+                    <span class="mx-2">Movies</span>
+                </li>
+            </a>
+
+            <a href="/Reports" class="nav-link text-white">
+                <li>
+                    <i class="bx bx-receipt"></i>
+                    <span class="mx-2">Reports</span>
+                </li>
+            </a>
+
+            <a href="/Search" class="nav-link text-white">
+                <li>
+                    <i class='bx bx-search-alt-2'></i>
+                    <span class="mx-2">Search</span>
+                </li>
+            </a>
+
+        </ul>
+    </div>
+
+    <!-- Main Wrapper -->
+    <div class="p-1 my-container">
+        <!-- Top Nav -->
+        <nav class="navbar top-navbar navbar-light bg-white px-5 sticky-top">
+            <a class="btn border-0" id="menu-btn"><i class="bx bx-menu"></i></a>
+        </nav>
+        <!--End Top Nav -->
+        
+        <h1 class=" h1 text-center">Search Movie</h1>
+        <div class="container-lg">
+            <div class="row">
+                <div class="col-3">
+                    <div class="card">
+                        <div class="card-header">Add Additional filters</div>
+                        <div class="card-body">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input me-2" type="checkbox" id="check-year">
+                                <label class="form-check-label" for="flexSwitchCheckDefault">Movie Year</label>
+                              </div>
+
+                              <div class="form-check form-switch">
+                                <input class="form-check-input me-2" type="checkbox" id="check-rank">
+                                <label class="form-check-label" for="flexSwitchCheckDefault">Movie Rank</label>
+                              </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-9">
+                    <div class="mb-3" id="movie-name-field">
+                        <label for="movie-name" class="col-form-label">Movie Name</label>
+                        <input type="text" class="form-control" id="movie-name">
+                    </div>
+        
+                    <div class="mb-3 visually-hidden" id="movie-year-field">
+                        <label for="movie-year" class="col-form-label">Movie Year</label>
+                        <input type="text" class="form-control" id="movie-year">
+                    </div>
+        
+                    <div class="mb-3 visually-hidden" id="movie-rank-field">
+                        <label for="movie-rank" class="col-form-label">Movie Rank</label>
+                        <input type="text" class="form-control" id="movie-rank">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-lg mb-2 my-5 text-center">
+            <button type="button" class="btn btn-primary btn-lg mx-4" id="search-btn">Search</button>
+        </div>
+
+        <div class="toast-container position-fixed top-0 end-0 p-3" id="toast-container"
+            style="z-index: 1090; visibility: hidden;">
+            <!-- Then put toasts within -->
+            <div class="toast align-items-center" id="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body" id="toast-body">
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+
+    </div>
