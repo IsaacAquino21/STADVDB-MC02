@@ -11,6 +11,7 @@ app.get('/', controller.getHome)
 app.get('/movie-page/:id/:year', controller.getMoviePage)
 
 app.get('/movie-add', controller.getMovieAdd)
+app.get('/error-500', controller.getError500)
 
 
 

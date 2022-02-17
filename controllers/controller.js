@@ -4,7 +4,7 @@ const config = require('../models/conns')
 
 const controller = {
 
-	getHome: async (req, res) =>{
+	getHome: async (req, res) => {
 		const data = {
 			title: "Home",
 			styles: ["sidebar"],
@@ -23,7 +23,7 @@ const controller = {
 
 
 		try {
-            const node1Connection = await mysql.createConnection(config.node1conn)
+			const node1Connection = await mysql.createConnection(config.node1conn)
 
 			// // set autocommit to 0
 			// node1Connection.query("set autocommit = 0;")
@@ -33,7 +33,7 @@ const controller = {
 
 			// // 
 
-            const qResult = await node1Connection.query(part1N1)
+			const qResult = await node1Connection.query(part1N1)
 			const qResult2 = await node1Connection.query(part2N1)
 			node1Connection.end()
 
@@ -41,12 +41,12 @@ const controller = {
 			data.dataDB2 = qResult2[0]
 
 			console.log("CONNECTED TO NODE 1")
-            
-        } catch(err) {
+
+		} catch (err) {
 			// goto node 2
 			try {
 				const node2Connection = await mysql.createConnection(config.node2conn)
-            	const qResult3 = await node2Connection.query(n2query)
+				const qResult3 = await node2Connection.query(n2query)
 				node2Connection.end()
 
 				const node3Connection = await mysql.createConnection(config.node3conn)
@@ -58,16 +58,21 @@ const controller = {
 
 				console.log("CONNECTED TO NODE 2 AND 3")
 
-			} catch(err) {
+			} catch (err) {
 				console.log(err)
 			}
-        }
+		}
 
 		res.render('movies', data)
 	},
 
+	/**
+	 * This GET method returns one movie page
+	 * @param {*} req 
+	 * @param {*} res 
+	 */
 	getMoviePage: async (req, res) => {
-		const data = {
+		var data = {
 			title: "Home",
 			styles: ["sidebar"],
 			scripts: ["sidebar", "admin-product-modal", "modify_movie"]
@@ -77,66 +82,87 @@ const controller = {
 		const id = req.params.id
 		const year = req.params.year
 
-		console.log(id + " " + year)
+		// console.log(id + " " + year)
 
-		try {
-			// throw Error // simulate off node 1
-
-			// var blob = new Blob(["SELECT * FROM node1 where `id` = " + id + ";"], {type: "text/plain;charset=utf-8"})
-
-			// saveAs(blob, "logs.txt")
-
-			// console.log('LOG SAVED')
-
-			// check if table1 or table2
-			if(year < 1980) {
-				// query in table1
+		if (year < 1980) {
+			// select from node 1
+			try {
+				// throw Error // simulate node 1 down
 				const node1Connection = await mysql.createConnection(config.node1conn)
-				const qResult = await node1Connection.query("SELECT * FROM node1 where `id` = " + id + ";")
-				data.dataDB = qResult[0][0]
+				await node1Connection.query("start transaction;")
+				await node1Connection.query("lock tables node1 read;")
+				const [rows, fields] = await node1Connection.query("SELECT * FROM node1 WHERE id = ? ;", [id])
+				await node1Connection.query("commit;")
+				await node1Connection.query("unlock tables;")
 
-				console.log('SUCCESSFULLY QUERIED IN NODE 1 TABLE 1')
+				// const [rows, fields] = await connection.execute('SELECT * FROM `table` WHERE `name` = ? AND `age` > ?', ['Morty', 14]);
+
+
+				console.log('Successfully queried in node1 table1')
+
+				console.log(rows)
+
+				data.dataDB = rows[0]
 
 				node1Connection.end()
-			} else {
-				const node1Connection = await mysql.createConnection(config.node1conn)
-				const qResult = await node1Connection.query("SELECT * FROM node1_2 where `id` = " + id + ";")
-				data.dataDB = qResult[0][0]
 
-				console.log('SUCCESSFULLY QUERIED IN NODE 1 TABLE 2')
-
-				node1Connection.end()
-			}
-
-		// assume: node 1 is closed, query in node2 or node3
-		} catch(err) {
-			// check if query in node 2 or 3
-			if(year < 1980) {
-				// query in node 2, year <= 1980
+			} catch (err) {
+				console.log(err)
+				// select from node 2, assume node 1 down
 				try {
+					// throw Error // simulate node 2 down
 					const node2Connection = await mysql.createConnection(config.node2conn)
-					const qResult2 = await node2Connection.query("SELECT * FROM node2 where `id` = " + id + ";")
-					data.dataDB = qResult2[0][0]
+					await node2Connection.query("set autocommit = 0;")
+					await node2Connection.query("start transaction;")
+					await node2Connection.query("lock tables node2 read;")
+					const [rows, fields] = await node2Connection.query("SELECT * FROM node2 WHERE id = ?;", [id])
+					await node2Connection.query("commit;")
+					await node2Connection.query("unlock tables;")
+					console.log("Successfully queried in node2")
 
-					console.log('SUCCESSFULLY QUERIED IN NODE 2')
+					data.dataDB = rows[0]
 
 					node2Connection.end()
-				} catch(err) {
-					console.log(err)
+
+				} catch (err) {
+					console.log(err + "ERROR SA SECOND CATCH")
+					res.redirect('/error-500')
 				}
+			}
 
-			} else {
-				// query in node 3, year >= 1980
+		} else if(year >= 1980) { 
+			// select from node 1 table 2
+			try {
+				// throw Error // simulate node 1 down
+				const node1Connection = await mysql.createConnection(config.node1conn)
+				await node1Connection.query("start transaction;")
+				await node1Connection.query("lock tables node1_2 read;")
+				const [rows, fields] = node1Connection.query("SELECT * FROM node1_2 WHERE id = ?;", [id])
+				await node1Connection.query("commit;")
+				await node1Connection.query("unlock tables;")
+
+				data.dataDB = rows[0]
+
+				console.log('Successfully queried in node1_2 table1')
+
+				node1Connection.end()
+			} catch (err) {
+				// select from node 3
 				try {
-					const node3Connection = await mysql.createConnection(config.node2conn)
-					const qResult3 = await node3Connection.query("SELECT * FROM node2 where `id` = " + id + ";")
-					data.dataDB = qResult3[0][0]
+					const node3Connection = await mysql.createConnection(config.node3conn)
+					await node3Connection.query("set autocommit = 0;")
+					await node3Connection.query("start transaction;")
+					await node3Connection.query("lock tables node3 read;")
+					const [rows, fields] = await node3Connection.query("SELECT * FROM node3 WHERE id = ?;", [id])
+					await node3Connection.query("commit;")
+					await node3Connection.query("unlock tables;")
+					console.log("Successfully queried in node3")
 
-					console.log('SUCCESSFULLY QUERIED IN NODE 3')
+					data.dataDB = rows[0]
 
 					node3Connection.end()
-				} catch(err) {
-					console.log(err)
+				} catch (err) {
+					res.redirect('/error-500')
 				}
 			}
 		}
@@ -144,6 +170,11 @@ const controller = {
 		res.render('movie-page', data)
 	},
 
+	/**
+	 * This GET method renders movie add page
+	 * @param {*} req 
+	 * @param {*} res 
+	 */
 	getMovieAdd: (req, res) => {
 		const data = {
 			title: "Home",
@@ -154,14 +185,20 @@ const controller = {
 		res.render('movie-add', data)
 	},
 
-	// lagay sa node2 or 3 + logic if down ung node1
+	/**
+	 * This POST method inserts a movie into the DB
+	 * @param {*} req 
+	 * @param {*} res 
+	 */
 	postAddMovie: async (req, res) => {
 		const movieName = req.body.movieName
 		const movieYear = parseInt(req.body.movieYear)
 		const movieRank = parseFloat(req.body.movieRank)
-		
-		try {
-			if(movieYear < 1980) {
+		var flag = false
+
+		if (movieYear < 1980) {
+			// insert to node 1
+			try {
 				// insert in node 1 table 1
 				const node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("set autocommit = 0;")
@@ -170,22 +207,55 @@ const controller = {
 				await node1Connection.query("INSERT INTO node1 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
 				await node1Connection.query("commit;")
 				await node1Connection.query("unlock tables;")
-				console.log("SUCCESSFULLY INSERTED TO NODE1 TABLE1")
+				console.log("Inserted to node 1 table 1")
 				node1Connection.end()
 
-				// insert in node 2
-				const node2Connection = await mysql.createConnection(config.node2conn)
-				await node2Connection.query("set autocommit = 0;")
-				await node2Connection.query("start transaction;")
-				await node2Connection.query("lock tables node2 write;")
-				await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
-				await node2Connection.query("commit;")
-				await node2Connection.query("unlock tables;")
-				console.log("INSERTED")
-				
-				node2Connection.end()
+				flag = true
 
-			} else {
+			} catch (err) {
+				console.log(err + "ERROR SA NODE 1")
+				// insert to node 2 if node 1 isn't successful
+				try {
+					const node2Connection = await mysql.createConnection(config.node2conn)
+					await node2Connection.query("set autocommit = 0;")
+					await node2Connection.query("start transaction;")
+					await node2Connection.query("lock tables node2 write;")
+					await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+					await node2Connection.query("commit;")
+					await node2Connection.query("unlock tables;")
+					console.log("Inserted to node 2, error node 1")
+
+					node2Connection.end()
+
+					// create log to put to node 2 na uncommitted ung last query, tas after, query in node 1 pag naka recover na
+
+				} catch (err) {
+					res.redirect('/error-500')
+				}
+			}
+
+			if (flag) {
+				try {
+					const node2Connection = await mysql.createConnection(config.node2conn)
+					await node2Connection.query("set autocommit = 0;")
+					await node2Connection.query("start transaction;")
+					await node2Connection.query("lock tables node2 write;")
+					await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+					await node2Connection.query("commit;")
+					await node2Connection.query("unlock tables;")
+					console.log("Inserted to node 2 no error sa node 1")
+
+					node2Connection.end()
+				} catch (err) {
+					// log to node 1 na di gumana ung node 2, may uncommitted sa node 2, node 1 = on
+
+				}
+			}
+			// insert to node 2 if node 1 is successful
+
+
+		} else {
+			try {
 				const node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("set autocommit = 0;")
 				await node1Connection.query("start transaction;")
@@ -193,55 +263,50 @@ const controller = {
 				await node1Connection.query("INSERT INTO node1_2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
 				await node1Connection.query("commit;")
 				await node1Connection.query("unlock tables;")
-				console.log("SUCCESSFULLY INSERTED TO NODE1 TABLE1")
+				console.log("Inserted to node 1 table 2")
 				node1Connection.end()
 
-				// insert in node 3
-				const node3Connection = await mysql.createConnection(config.node2conn)
-				await node3Connection.query("set autocommit = 0;")
-				await node3Connection.query("start transaction;")
-				await node3Connection.query("lock tables node3 write;")
-				await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
-				await node3Connection.query("commit;")
-				await node3Connection.query("unlock tables;")
-				console.log("INSERTED")
-				
-				node3Connection.end()
+				flag = true
+			} catch (err) {
+				try {
+					const node3Connection = await mysql.createConnection(config.node2conn)
+					await node3Connection.query("set autocommit = 0;")
+					await node3Connection.query("start transaction;")
+					await node3Connection.query("lock tables node3 write;")
+					await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+					await node3Connection.query("commit;")
+					await node3Connection.query("unlock tables;")
+					console.log("Inserted to node 3 error node 1")
+
+					node3Connection.end()
+
+					//
+				} catch (err) {
+					res.redirect('/error-500')
+				}
 			}
-			// connect to node 1
-			
 
+			if (flag) {
+				// insert to node 3 if node 1 is successful
+				try {
+					const node3Connection = await mysql.createConnection(config.node3conn)
+					await node3Connection.query("set autocommit = 0;")
+					await node3Connection.query("start transaction;")
+					await node3Connection.query("lock tables node3 write;")
+					await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+					await node3Connection.query("commit;")
+					await node3Connection.query("unlock tables;")
+					console.log("Inserted to node 3 no errors sa node 1")
 
-		} catch(err) {
-			// if less than 1980, query in node 2
-			if(movieYear < 1980) {
-				const node2Connection = await mysql.createConnection(config.node2conn)
-				await node2Connection.query("set autocommit = 0;")
-				await node2Connection.query("start transaction;")
-				await node2Connection.query("lock tables node2 write;")
-				await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
-				await node2Connection.query("commit;")
-				await node2Connection.query("unlock tables;")
-				console.log("INSERTED")
-				
-				node2Connection.end()
-		
-			} else {
-				// if >= 1980, query in node3
-				const node3Connection = await mysql.createConnection(config.node2conn)
-				await node3Connection.query("set autocommit = 0;")
-				await node3Connection.query("start transaction;")
-				await node3Connection.query("lock tables node3 write;")
-				await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
-				await node3Connection.query("commit;")
-				await node3Connection.query("unlock tables;")
-				console.log("INSERTED")
-				
-				node3Connection.end()
+					node3Connection.end()
+				} catch (err) {
+					// log to node 1 na di gumana ung node 3, may uncommitted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
+
+				}
 			}
 		}
 
-		
+
 		// false pag di na add sa node 1/node2 or 3
 		res.send(true)
 	},
@@ -256,17 +321,77 @@ const controller = {
 
 		// + logic, check what yr < 1980, and >- 1980
 
-		const node1Connection = await mysql.createConnection(config.node1conn)
-		await node1Connection.query("set autocommit = 0;")
-		await node1Connection.query("start transaction;")
-		await node1Connection.query("lock tables node1 write;")
-		await node1Connection.query("UPDATE node1 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";" )
-		await node1Connection.query("commit;")
-		await node1Connection.query("unlock tables;")
-		console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " TO NODE1 TABLE1")
-		node1Connection.end()
+		if(data.year < 1980) {
+			try {
+				// update node1
+				const node1Connection = await mysql.createConnection(config.node1conn)
+				await node1Connection.query("set autocommit = 0;")
+				await node1Connection.query("start transaction;")
+				await node1Connection.query("lock tables node1 write;")
+				await node1Connection.query("UPDATE node1 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
+				
+				await node1Connection.query("commit;")
+				await node1Connection.query("unlock tables;")
+				console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " FROM NODE1 TABLE1")
+				node1Connection.end()
 
-		res.send(true)
+				res.send(true)
+			} catch(err) {
+				// update node 2
+				try {
+					const node2Connection = await mysql.createConnection(config.node2conn)
+					await node2Connection.query("set autocommit = 0;")
+					await node2Connection.query("start transaction;")
+					await node2Connection.query("lock tables node2 write;")
+					await node2Connection.query("UPDATE node2 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
+					
+					await node2Connection.query("commit;")
+					await node2Connection.query("unlock tables;")
+					console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " FROM NODE1 TABLE1")
+					node2Connection.end()
+
+					res.send(true)
+				} catch(err) {
+					res.redirect('/error-500')
+				}
+			}
+		} else if(data.year >= 1980) {
+			try {
+				// update node1_2
+				const node1Connection = await mysql.createConnection(config.node1conn)
+				await node1Connection.query("set autocommit = 0;")
+				await node1Connection.query("start transaction;")
+				await node1Connection.query("lock tables node1_2 write;")
+				await node1Connection.query("UPDATE node1_2 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
+				
+				await node1Connection.query("commit;")
+				await node1Connection.query("unlock tables;")
+				console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " FROM NODE1_2 TABLE1")
+				node1Connection.end()
+
+				res.send(true)
+			} catch(err) {
+				// update node 2
+				try {
+					const node3Connection = await mysql.createConnection(config.node3conn)
+					await node3Connection.query("set autocommit = 0;")
+					await node3Connection.query("start transaction;")
+					await node3Connection.query("lock tables node3 write;")
+					await node3Connection.query("UPDATE node3 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
+					
+					await node3Connection.query("commit;")
+					await node3Connection.query("unlock tables;")
+					console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " FROM NODE1 TABLE1")
+					node3Connection.end()
+
+					res.send(true)
+				} catch(err) {
+					res.redirect('/error-500')
+				}
+			}
+		}
+
+		
 	},
 
 	postDeleteMovie: async (req, res) => {
@@ -284,6 +409,16 @@ const controller = {
 		node1Connection.end()
 
 		res.send(true)
+	},
+
+	getError500: (req, res) => {
+		const data = {
+			title: "Home",
+			styles: ["sidebar"],
+			scripts: ["sidebar", "movies-datatable", "admin-product-modal"]
+		}
+
+		res.render('error-500', data)
 	}
 }
 
