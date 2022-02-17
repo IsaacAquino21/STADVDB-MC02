@@ -4,8 +4,7 @@ const node1conn = {
     user: "MC02GRP21",
     password: "Password!",
     database: "node1_db",
-    connectionLimit: 10,
-    multipleStatements: true
+    connectionLimit: 10
 }
 
 const node2conn = {
@@ -14,8 +13,7 @@ const node2conn = {
     user: "MC02GRP21",
     password: "Password!",
     database: "node2_db",
-    connectionLimit: 10,
-    multipleStatements: true
+    connectionLimit: 10
 }
 
 const node3conn = {
@@ -24,8 +22,7 @@ const node3conn = {
     user: "MC02GRP21",
     password: "Password!",
     database: "node3_db",
-    connectionLimit: 10,
-    multipleStatements: true
+    connectionLimit: 10
 }
 
 module.exports = { node1conn, node2conn, node3conn }
