@@ -6,22 +6,29 @@
             </a>
             <a href="/movies" class="nav-link text-white">
                 <li>
-                    <i class='bx bxs-camera-movie'></i>
-                    <span class="mx-2">Movies</span>
+                    <i class='bx bx-camera-movie'></i>
+                    <span class="mx-2">View Movies</span>
                 </li>
             </a>
 
             <a href="/Reports" class="nav-link text-white">
                 <li>
                     <i class="bx bx-receipt"></i>
-                    <span class="mx-2">Reports</span>
+                    <span class="mx-2">View Reports</span>
                 </li>
             </a>
 
             <a href="/Search" class="nav-link text-white">
                 <li>
                     <i class='bx bx-search-alt-2'></i>
-                    <span class="mx-2">Search</span>
+                    <span class="mx-2">Search Movie</span>
+                </li>
+            </a>
+
+            <a href="/Movie" class="nav-link text-white">
+                <li>
+                    <i class='bx bx-add-to-queue'></i>
+                    <span class="mx-2">Add Movie</span>
                 </li>
             </a>
 
@@ -53,7 +60,7 @@
                 <tbody>
                     <!--Insert Entries here-->
                     {{#each dataDB1}}
-                        {{> movie-item}}
+                    {{> movie-item}}
                     {{/each}}
                 </tbody>
             </table>
@@ -76,7 +83,7 @@
                 <tbody>
                     <!--Insert Entries here-->
                     {{#each dataDB2}}
-                        {{> movie-item}}
+                    {{> movie-item}}
                     {{/each}}
                 </tbody>
             </table>
