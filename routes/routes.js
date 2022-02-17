@@ -10,6 +10,14 @@ app.set('views', path.join(__dirname, '../views'));
 app.get('/', controller.getHome)
 app.get('/movie-page/:id/:year', controller.getMoviePage)
 
+app.get('/movie-add', controller.getMovieAdd)
+
+
+
+app.post('/add-movie', controller.postAddMovie)
+app.post('/update-movie', controller.postUpdateMovie)
+app.post('/delete-movie', controller.postDeleteMovie)
+
 
 // post methods
 // app.post('/test', controller.postReadOneMovie)

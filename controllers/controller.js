@@ -70,7 +70,7 @@ const controller = {
 		const data = {
 			title: "Home",
 			styles: ["sidebar"],
-			scripts: ["sidebar", "movies-datatable", "admin-product-modal"]
+			scripts: ["sidebar", "admin-product-modal", "modify_movie"]
 		}
 
 		// get id and year from url params
@@ -144,17 +144,147 @@ const controller = {
 		res.render('movie-page', data)
 	},
 
-	// postReadOneMovie: (req, res) => {
-	// 	const data = req.body
+	getMovieAdd: (req, res) => {
+		const data = {
+			title: "Home",
+			styles: ["sidebar"],
+			scripts: ["sidebar", "movies-datatable", "admin-product-modal", "movie-add"]
+		}
 
-	// 	if(JSON.stringify(data.id) != "") {
-	// 		console.log(JSON.stringify(data))
-	// 	}
+		res.render('movie-add', data)
+	},
+
+	// lagay sa node2 or 3 + logic if down ung node1
+	postAddMovie: async (req, res) => {
+		const movieName = req.body.movieName
+		const movieYear = parseInt(req.body.movieYear)
+		const movieRank = parseFloat(req.body.movieRank)
 		
-	// 	res.redirect('/movie-page')
-	// }
+		try {
+			if(movieYear < 1980) {
+				// insert in node 1 table 1
+				const node1Connection = await mysql.createConnection(config.node1conn)
+				await node1Connection.query("set autocommit = 0;")
+				await node1Connection.query("start transaction;")
+				await node1Connection.query("lock tables node1 write;")
+				await node1Connection.query("INSERT INTO node1 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+				await node1Connection.query("commit;")
+				await node1Connection.query("unlock tables;")
+				console.log("SUCCESSFULLY INSERTED TO NODE1 TABLE1")
+				node1Connection.end()
+
+				// insert in node 2
+				const node2Connection = await mysql.createConnection(config.node2conn)
+				await node2Connection.query("set autocommit = 0;")
+				await node2Connection.query("start transaction;")
+				await node2Connection.query("lock tables node2 write;")
+				await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+				await node2Connection.query("commit;")
+				await node2Connection.query("unlock tables;")
+				console.log("INSERTED")
+				
+				node2Connection.end()
+
+			} else {
+				const node1Connection = await mysql.createConnection(config.node1conn)
+				await node1Connection.query("set autocommit = 0;")
+				await node1Connection.query("start transaction;")
+				await node1Connection.query("lock tables node1_2 write;")
+				await node1Connection.query("INSERT INTO node1_2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+				await node1Connection.query("commit;")
+				await node1Connection.query("unlock tables;")
+				console.log("SUCCESSFULLY INSERTED TO NODE1 TABLE1")
+				node1Connection.end()
+
+				// insert in node 3
+				const node3Connection = await mysql.createConnection(config.node2conn)
+				await node3Connection.query("set autocommit = 0;")
+				await node3Connection.query("start transaction;")
+				await node3Connection.query("lock tables node3 write;")
+				await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+				await node3Connection.query("commit;")
+				await node3Connection.query("unlock tables;")
+				console.log("INSERTED")
+				
+				node3Connection.end()
+			}
+			// connect to node 1
+			
 
 
+		} catch(err) {
+			// if less than 1980, query in node 2
+			if(movieYear < 1980) {
+				const node2Connection = await mysql.createConnection(config.node2conn)
+				await node2Connection.query("set autocommit = 0;")
+				await node2Connection.query("start transaction;")
+				await node2Connection.query("lock tables node2 write;")
+				await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+				await node2Connection.query("commit;")
+				await node2Connection.query("unlock tables;")
+				console.log("INSERTED")
+				
+				node2Connection.end()
+		
+			} else {
+				// if >= 1980, query in node3
+				const node3Connection = await mysql.createConnection(config.node2conn)
+				await node3Connection.query("set autocommit = 0;")
+				await node3Connection.query("start transaction;")
+				await node3Connection.query("lock tables node3 write;")
+				await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+				await node3Connection.query("commit;")
+				await node3Connection.query("unlock tables;")
+				console.log("INSERTED")
+				
+				node3Connection.end()
+			}
+		}
+
+		
+		// false pag di na add sa node 1/node2 or 3
+		res.send(true)
+	},
+
+	postUpdateMovie: async (req, res) => {
+		const data = {
+			id: parseInt(req.body.id),
+			name: req.body.name,
+			year: parseInt(req.body.year),
+			rank: parseFloat(req.body.rank)
+		}
+
+		// + logic, check what yr < 1980, and >- 1980
+
+		const node1Connection = await mysql.createConnection(config.node1conn)
+		await node1Connection.query("set autocommit = 0;")
+		await node1Connection.query("start transaction;")
+		await node1Connection.query("lock tables node1 write;")
+		await node1Connection.query("UPDATE node1 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";" )
+		await node1Connection.query("commit;")
+		await node1Connection.query("unlock tables;")
+		console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " TO NODE1 TABLE1")
+		node1Connection.end()
+
+		res.send(true)
+	},
+
+	postDeleteMovie: async (req, res) => {
+		// prompt after deleting
+		const id = parseInt(req.body.id)
+
+		const node1Connection = await mysql.createConnection(config.node1conn)
+		await node1Connection.query("set autocommit = 0;")
+		await node1Connection.query("start transaction;")
+		await node1Connection.query("lock tables node1 write;")
+		await node1Connection.query("DELETE FROM node1 WHERE id = " + id + ";")
+		await node1Connection.query("commit;")
+		await node1Connection.query("unlock tables;")
+		console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " TO NODE1 TABLE1")
+		node1Connection.end()
+
+		res.send(true)
+	}
 }
 
 module.exports = controller
