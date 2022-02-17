@@ -325,6 +325,7 @@ const controller = {
 
 		if(data.year < 1980) {
 			try {
+				// throw Error // simulate off node 1
 				// update node1
 				const node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("set autocommit = 0;")
@@ -343,6 +344,7 @@ const controller = {
 			} catch(err) {
 				// update node 2
 				try {
+					// throw Error // simulate off node node 2
 					const node2Connection = await mysql.createConnection(config.node2conn)
 					await node2Connection.query("set autocommit = 0;")
 					await node2Connection.query("start transaction;")
@@ -356,7 +358,8 @@ const controller = {
 
 					res.send(true)
 				} catch(err) {
-					res.redirect('/error-500')
+					console.log(err + "ERROR SA SECOND CATCH")
+					res.send(false)
 				}
 			}
 
@@ -367,10 +370,10 @@ const controller = {
 					await node2Connection.query("set autocommit = 0;")
 					await node2Connection.query("start transaction;")
 					await node2Connection.query("lock tables node2 write;")
-					await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+					await node2Connection.query("UPDATE node2 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 					await node2Connection.query("commit;")
 					await node2Connection.query("unlock tables;")
-					console.log("Inserted to node 2 no errors sa node 1")
+					console.log("Updated node 2 no errors sa node 1")
 	
 					node2Connection.end()
 
@@ -413,7 +416,7 @@ const controller = {
 
 					res.send(true)
 				} catch(err) {
-					res.redirect('/error-500')
+					res.send(false)
 				}
 			}
 
@@ -424,7 +427,7 @@ const controller = {
 					await node3Connection.query("set autocommit = 0;")
 					await node3Connection.query("start transaction;")
 					await node3Connection.query("lock tables node3 write;")
-					await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+					await node3Connection.query("UPDATE node3 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 					await node3Connection.query("commit;")
 					await node3Connection.query("unlock tables;")
 					console.log("Inserted to node 3 no errors sa node 1")
@@ -433,27 +436,136 @@ const controller = {
 
 				} catch (err) {
 					// log to node 1 na di gumana ung node 3, may uncommitted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
-	
+					
 				}
 			}
 		}
 	},
 
 	postDeleteMovie: async (req, res) => {
-		// prompt after deleting
 		const id = parseInt(req.body.id)
+		const year = parseInt(req.body.year)
+		var flag = false
+		// delete from node 1
+		if(year < 1980) {
+			try {
+				// throw Error // simulate node 1 off
+				const node1Connection = await mysql.createConnection(config.node1conn)
+				await node1Connection.query("set autocommit = 0;")
+				await node1Connection.query("start transaction;")
+				await node1Connection.query("lock tables node1 write;")
+				await node1Connection.query("DELETE FROM node1 WHERE id = " + id + ";")
+				await node1Connection.query("commit;")
+				await node1Connection.query("unlock tables;")
+				console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE1 TABLE1")
+				node1Connection.end()
 
-		const node1Connection = await mysql.createConnection(config.node1conn)
-		await node1Connection.query("set autocommit = 0;")
-		await node1Connection.query("start transaction;")
-		await node1Connection.query("lock tables node1 write;")
-		await node1Connection.query("DELETE FROM node1 WHERE id = " + id + ";")
-		await node1Connection.query("commit;")
-		await node1Connection.query("unlock tables;")
-		console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " TO NODE1 TABLE1")
-		node1Connection.end()
+				flag = true
+	
+				res.send(true)
+			} catch(err) {
+				// delete from node 2, error node 1
+				try {
+					// throw Error // simulate node 1 off
+					const node2Connection = await mysql.createConnection(config.node2conn)
+					await node2Connection.query("set autocommit = 0;")
+					await node2Connection.query("start transaction;")
+					await node2Connection.query("lock tables node2 write;")
+					await node2Connection.query("DELETE FROM node2 WHERE id = " + id + ";")
+					await node2Connection.query("commit;")
+					await node2Connection.query("unlock tables;")
+					console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE2")
+					node2Connection.end()
+	
+					res.send(true)
+				} catch(err) {
+					res.send(false)
+				}
+			}
 
-		res.send(true)
+			if(flag) {
+				try {
+					const node2Connection = await mysql.createConnection(config.node2conn)
+					await node2Connection.query("set autocommit = 0;")
+					await node2Connection.query("start transaction;")
+					await node2Connection.query("lock tables node2 write;")
+					await node2Connection.query("DELETE FROM node2 WHERE id = " + id + ";")
+					await node2Connection.query("commit;")
+					await node2Connection.query("unlock tables;")
+					console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE2")
+					node2Connection.end()
+
+					res.send(true)
+				} catch(err) {
+					// log to node 1 na di gumana ung node 2, may uncommitted sa node 2, node 1 = on, tas i query sa node 2 ung logged sa node 1
+				}
+				
+			}
+
+
+		} else if (year >= 1980) {
+			try {
+				console.log("PUMASOK SA TRY")
+				const node1Connection = await mysql.createConnection(config.node1conn)
+				console.log("CONNECTED")
+				await node1Connection.query("set autocommit = 0;")
+				console.log("AUTOCOMMIT")
+				await node1Connection.query("start transaction;")
+				console.log("START TX")
+				await node1Connection.query("lock tables node1_2 write;")
+				// console.log("LOCK TABLES")
+				await node1Connection.query("DELETE FROM node1_2 WHERE id = " + id + ";")
+				console.log("DELETE QUERY")
+				await node1Connection.query("commit;")
+				console.log("COMMIT")
+				await node1Connection.query("unlock tables;")
+				// console.log("UNLOCK TABLES")
+				console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE1 TABLE2")
+				node1Connection.end()
+
+				flag = true
+				
+				res.send(true)
+			} catch(err) {
+				console.log(err + "NAG ERR")
+				// delete from node 2, error node 1
+				try {
+					const node3Connection = await mysql.createConnection(config.node3conn)
+					await node3Connection.query("set autocommit = 0;")
+					await node3Connection.query("start transaction;")
+					await node3Connection.query("lock tables node3 write;")
+					await node3Connection.query("DELETE FROM node3 WHERE id = " + id + ";")
+					await node3Connection.query("commit;")
+					await node3Connection.query("unlock tables;")
+					console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE3")
+					node3Connection.end()
+	
+					res.send(true)
+				} catch(err) {
+					res.send(false)
+				}
+			}
+
+			if(flag) {
+				try {
+					const node3Connection = await mysql.createConnection(config.node3conn)
+					await node3Connection.query("set autocommit = 0;")
+					await node3Connection.query("start transaction;")
+					await node3Connection.query("lock tables node3 write;")
+					await node3Connection.query("DELETE FROM node3 WHERE id = " + id + ";")
+					await node3Connection.query("commit;")
+					await node3Connection.query("unlock tables;")
+					console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE3")
+					node3Connection.end()
+
+					res.send(true)
+				} catch(err) {
+					// log to node 1 na di gumana ung node 2, may uncommitted sa node 2, node 1 = on, tas i query sa node 2 ung logged sa node 1
+				}
+				
+			}
+		}
+		
 	},
 
 	getError500: (req, res) => {

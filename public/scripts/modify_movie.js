@@ -19,14 +19,16 @@ $(document).ready(function () {
             data: data,
             url: '/update-movie',
             success: function (result) {
-                if(result == true) {
+                if (result == true) {
                     alert("UPDATED MOVIE")
 
                     var movie = document.getElementById(data.id);
 
-                    $(movie).children().children('.movie-name').html(data.name);
-                    $(movie).children().children('.movie-year').html(data.year);
                     $(movie).children().children('.movie-rank').html(data.rank);
+
+
+                } else if (result == false) {
+                    window.location.replace("/error-500");
                 }
             }
         })
@@ -48,10 +50,13 @@ $(document).ready(function () {
             data: data,
             url: '/delete-movie',
             success: function (result) {
-                if(result == true) {
+                if (result == true) {
                     alert("DELETED MOVIE")
 
-                    window.location.replace("/");
+                    window.location.replace("/")
+
+                } else if(result == false) {
+                    window.location.replace("/error-500")
                 }
             }
         })
