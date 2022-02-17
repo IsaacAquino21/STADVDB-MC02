@@ -35,8 +35,6 @@ hostname = process.env.HOSTNAME;
 // routes
 app.use('/', routes)
 
-app.listen(config.port, config.host, () => {
-    console.log('Listening to ' + config.host + ':' + config.port)
-})
+app.listen(process.env.PORT || 8080)
 
 module.exports = app
