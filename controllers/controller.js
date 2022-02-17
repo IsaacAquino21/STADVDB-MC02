@@ -319,6 +319,8 @@ const controller = {
 			rank: parseFloat(req.body.rank)
 		}
 
+		var flag = false
+
 		// + logic, check what yr < 1980, and >- 1980
 
 		if(data.year < 1980) {
@@ -334,6 +336,8 @@ const controller = {
 				await node1Connection.query("unlock tables;")
 				console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " FROM NODE1 TABLE1")
 				node1Connection.end()
+
+				flag = true
 
 				res.send(true)
 			} catch(err) {
@@ -355,6 +359,27 @@ const controller = {
 					res.redirect('/error-500')
 				}
 			}
+
+			if(flag) {
+				// insert to node 2 if node 1 is successful
+				try {
+					const node2Connection = await mysql.createConnection(config.node2conn)
+					await node2Connection.query("set autocommit = 0;")
+					await node2Connection.query("start transaction;")
+					await node2Connection.query("lock tables node2 write;")
+					await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+					await node2Connection.query("commit;")
+					await node2Connection.query("unlock tables;")
+					console.log("Inserted to node 2 no errors sa node 1")
+	
+					node2Connection.end()
+
+				} catch (err) {
+					// log to node 1 na di gumana ung node 3, may uncommitted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
+	
+				}
+			}
+
 		} else if(data.year >= 1980) {
 			try {
 				// update node1_2
@@ -368,6 +393,8 @@ const controller = {
 				await node1Connection.query("unlock tables;")
 				console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " FROM NODE1_2 TABLE1")
 				node1Connection.end()
+
+				flag = true
 
 				res.send(true)
 			} catch(err) {
@@ -389,9 +416,27 @@ const controller = {
 					res.redirect('/error-500')
 				}
 			}
-		}
 
-		
+			if(flag) {
+				// insert to node 2 if node 1 is successful
+				try {
+					const node3Connection = await mysql.createConnection(config.node3conn)
+					await node3Connection.query("set autocommit = 0;")
+					await node3Connection.query("start transaction;")
+					await node3Connection.query("lock tables node3 write;")
+					await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+					await node3Connection.query("commit;")
+					await node3Connection.query("unlock tables;")
+					console.log("Inserted to node 3 no errors sa node 1")
+	
+					node3Connection.end()
+
+				} catch (err) {
+					// log to node 1 na di gumana ung node 3, may uncommitted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
+	
+				}
+			}
+		}
 	},
 
 	postDeleteMovie: async (req, res) => {
