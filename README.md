@@ -1,4 +1,5 @@
 # stadvdb-mco2
 
-1. cmd and `npm install`
-2. and `npm run dev`
+# How to run program
+1. Open CMD on root folder and type `npm install`
+2. Type `npm run dev` after installation to run program
