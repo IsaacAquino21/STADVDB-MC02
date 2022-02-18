@@ -150,20 +150,20 @@ const controller = {
 				node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1_2 read;")
-				const [rows, fields] = node1Connection.query("SELECT * FROM node1_2 WHERE id = ?;", [id])
+				const [rows, fields] = await node1Connection.query("SELECT * FROM node1_2 WHERE id = ?;", [id])
 				await node1Connection.query("COMMIT;")
 				await node1Connection.query("UNLOCK TABLES;")
 
 				data.dataDB = rows[0]
 
-				console.log('Successfully queried in node1_2 table1')
+				console.log('Successfully queried in node1 table node1_2')
 
 				node1Connection.end()
 			} catch (err) {
 				if (node1Connection != null) {
 					node1Connection.end()
 				}
-				console.log(err + "ERROR in node 1 table 1_2")
+				console.log(err)
 				// select from node 3
 
 				try {
