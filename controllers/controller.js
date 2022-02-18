@@ -509,8 +509,6 @@ const controller = {
 				console.log("CONNECTED")
 				await node1Connection.query("set autocommit = 0;")
 				console.log("autocommit")
-				await node1Connection.query("START TRANSACTION;")
-				console.log("START TX")
 				await node1Connection.query("lock tables node1_2 write;")
 				// console.log("LOCK TABLES")
 				await node1Connection.query("DELETE FROM node1_2 WHERE id = " + id + ";")
