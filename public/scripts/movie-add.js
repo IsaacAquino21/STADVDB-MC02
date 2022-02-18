@@ -41,6 +41,7 @@ $(document).ready(function () {
                     alert("MOVIE ADDED")
                 } else {
                     // to error page
+                    window.location.replace("/error-500")
                 }
             }
         })

@@ -25,4 +25,13 @@ const node3conn = {
     connectionLimit: 10
 }
 
-module.exports = { node1conn, node2conn, node3conn }
+const nodeLogsConn = {
+    host: "mco2-logs.mysql.database.azure.com",
+    port: "3306",
+    user: "MC02GRP21",
+    password: "Password!",
+    database: "node_logs_db",
+    connectionLimit: 10
+}
+
+module.exports = { node1conn, node2conn, node3conn, nodeLogsConn }
