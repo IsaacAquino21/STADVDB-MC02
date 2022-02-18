@@ -199,7 +199,7 @@ const controller = {
 	 */
 	getMovieAdd: (req, res) => {
 		const data = {
-			title: "Home",
+			title: "All Movies",
 			styles: ["sidebar"],
 			scripts: ["sidebar", "movies-datatable", "admin-product-modal", "movie-add"]
 		}
@@ -660,12 +660,22 @@ const controller = {
 
 	getError500: (req, res) => {
 		const data = {
-			title: "Home",
+			title: "Error",
 			styles: ["sidebar"],
 			scripts: ["sidebar", "movies-datatable", "admin-product-modal"]
 		}
 
 		res.render('error-500', data)
+	},
+
+	getRecovery: (req, res) => {
+		const data = {
+			title: "Node Recovery",
+			styles: ["sidebar"],
+			scripts: ["sidebar", "movies-datatable", "admin-product-modal", "recovery"]
+		}
+
+		res.render('recovery', data)
 	}
 }
 
