@@ -403,6 +403,7 @@ const controller = {
 
 		} else if (movieYear >= 1980) {
 			try {
+				// throw Error // simulate
 				node1Connection = await mysql.createConnection(config.node1conn)
 				nodeLogsConnection = await mysql.createConnection(config.nodeLogsConn)
 
@@ -424,9 +425,9 @@ const controller = {
 				await node1Connection.query("UNLOCK TABLES;")
 
 				// update logs
-				await nodeLogsConnection.query("UPDATE `node1_2` SET `status` = ? WHERE `name` = ? AND `dest` = 'node1_2';", ['committing', movieName])
+				await nodeLogsConnection.query("UPDATE `node1_2_logs` SET `status` = ? WHERE `name` = ? AND `dest` = 'node1_2';", ['committing', movieName])
 				console.log("Log updated to committing in node 1 table 2")
-				await nodeLogsConnection.query("UPDATE `node1_2` SET `status` = ? WHERE `name` = ? AND `dest` = 'node1_2';", ['committed', movieName])
+				await nodeLogsConnection.query("UPDATE `node1_2_logs` SET `status` = ? WHERE `name` = ? AND `dest` = 'node1_2';", ['committed', movieName])
 				console.log("Log updated to committed in node 1 table 2")
 				console.log("Inserted to node 1 table 2")
 
@@ -445,6 +446,7 @@ const controller = {
 				}
 
 				try {
+					// throw Error // simulate
 					node3Connection = await mysql.createConnection(config.node3conn)
 					nodeLogsConnection = await mysql.createConnection(config.nodeLogsConn)
 
@@ -472,11 +474,13 @@ const controller = {
 					console.log("Log updated to committed in node3")
 					console.log("Inserted to node3")
 
+					// log na nag fail sa node 1
+					await nodeLogsConnection.query("INSERT INTO `node3_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'committing', 'node1_2');")
+					console.log("Successful insert in node3 but unsuccessful in node1")
+
 					// end connections
 					node3Connection.end()
 					nodeLogsConnection.end()
-
-					flag = true
 
 					//
 				} catch (err) {
@@ -496,7 +500,7 @@ const controller = {
 						await nodeLogsConnection.query("INSERT INTO `node3_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node3');")
 						console.log("Logs in node3_logs terminated")
 
-						await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node1');")
+						await nodeLogsConnection.query("INSERT INTO `node1_2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node1');")
 						console.log("Logs in node1_logs terminated")
 
 					} catch(err) {
@@ -511,6 +515,7 @@ const controller = {
 			if (flag) {
 				// insert to node 3 if node 1 is successful
 				try {
+					// throw Error // simulate
 					node3Connection = await mysql.createConnection(config.node3conn)
 					nodeLogsConnection = await mysql.createConnection(config.nodeLogsConn)
 
@@ -547,14 +552,24 @@ const controller = {
 					}
 
 					if (nodeLogsConnection != null) {
-						node3Connection.end()
+						nodeLogsConnection.end()
 					}
 
 					// log to node 1 na di gumana ung node 3, may unCOMMITted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
 					// create log in node1 na di pumasok sa node 3 ung insert, pero successful in node 1
 					// log na nag fail sa node 3
-					await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'committing', 'node3');")
-					console.log("Successful insert in node1 but unsuccessful in node3")
+					try {
+						nodeLogsConnection = await mysql.createConnection(config.nodeLogsConn)
+						await nodeLogsConnection.query("INSERT INTO `node1_2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'committing', 'node3');")
+						console.log("Successful insert in node1 but unsuccessful in node3")
+					} catch(err) {
+						if(nodeLogsConnection != null) {
+							nodeLogsConnection.end()
+						}
+					}
+					
+
+
 				}
 			}
 		}
@@ -570,12 +585,10 @@ const controller = {
 	},
 
 	postUpdateMovie: async (req, res) => {
-		const data = {
-			id: parseInt(req.body.id),
-			movieName: req.body.name,
-			movieYear: parseInt(req.body.year),
-			movieRank: parseFloat(req.body.rank)
-		}
+		const movieName = req.body.name
+		const movieYear = parseInt(req.body.year)
+		const movieRank = parseFloat(req.body.rank)
+		const movieId = parseInt(req.body.id)
 
 		var flag = false
 		var flag2 = false
@@ -599,11 +612,11 @@ const controller = {
 				await node1Connection.query("LOCK TABLES node1 write;")
 		
 				// insert in logs
-				await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node1');")
+				await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node1');")
 				console.log("Start log inserted to node 1 table 1")
 		
 				// update movie
-				await node1Connection.query("UPDATE node1 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + data.id + ";")
+				await node1Connection.query("UPDATE node1 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + movieId + ";")
 				
 				// update logs 
 				await nodeLogsConnection.query("UPDATE `node1_logs` SET `status` = 'write' WHERE `name` = ? AND `dest` = 'node1';", [movieName])
@@ -644,11 +657,11 @@ const controller = {
 					await node2Connection.query("LOCK TABLES node2 write;")
 		
 					// insert in logs
-					await nodeLogsConnection.query("INSERT INTO `node2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node2');")
+					await nodeLogsConnection.query("INSERT INTO `node2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node2');")
 					console.log("Start log inserted to node 2")
 		
 					// update movie
-					await node2Connection.query("UPDATE node2 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + data.id + ";")
+					await node2Connection.query("UPDATE node2 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + movieId + ";")
 					
 					// update logs 
 					await nodeLogsConnection.query("UPDATE `node2_logs` SET `status` = 'write' WHERE `name` = ? AND `dest` = 'node2';", [movieName])
@@ -664,7 +677,7 @@ const controller = {
 					console.log("Inserted to node 2")
 		
 					// log na nag fail sa node 1
-					await nodeLogsConnection.query("INSERT INTO `node2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'committing', 'node1');")
+					await nodeLogsConnection.query("INSERT INTO `node2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'committing', 'node1');")
 					console.log("Successful insert in node2 but unsuccessful in node1")
 		
 					// end connections
@@ -688,10 +701,10 @@ const controller = {
 					try {
 						nodeLogsConnection = await mysql.createConnection(config.nodeLogsConn)
 		
-						await nodeLogsConnection.query("INSERT INTO `node2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node2');")
+						await nodeLogsConnection.query("INSERT INTO `node2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node2');")
 						console.log("Logs in node2_logs terminated")
 		
-						await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node1');")
+						await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node1');")
 						console.log("Logs in node1_logs terminated")
 		
 					} catch(err) {
@@ -716,11 +729,11 @@ const controller = {
 					await node2Connection.query("LOCK TABLES node2 write;")
 		
 					// insert in logs
-					await nodeLogsConnection.query("INSERT INTO `node2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node2');")
+					await nodeLogsConnection.query("INSERT INTO `node2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node2');")
 					console.log("Start log inserted to node 2")
 		
 					// update movie
-					await node2Connection.query("UPDATE node2 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + data.id + ";")
+					await node2Connection.query("UPDATE node2 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + movieId + ";")
 					
 					// update logs 
 					await nodeLogsConnection.query("UPDATE `node2_logs` SET `status` = 'write' WHERE `name` = ? AND `dest` = 'node2';", [movieName])
@@ -750,7 +763,7 @@ const controller = {
 					// log na nag fail sa node 2
 					try {
 						
-						await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'committing', 'node2');")
+						await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'committing', 'node2');")
 						console.log("Successful insert in node1 but unsuccessful in node2")
 						nodeLogsConnection.end()
 					} catch(err) {
@@ -772,11 +785,11 @@ const controller = {
 				await node1Connection.query("LOCK TABLES node1_2 write;")
 		
 				// insert in logs
-				await nodeLogsConnection.query("INSERT INTO `node1_2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node1_2');")
+				await nodeLogsConnection.query("INSERT INTO `node1_2_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node1_2');")
 				console.log("Start log inserted to node 1 table 2")
 		
 				// update movie
-				await node1Connection.query("UPDATE node1_2 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + data.id + ";")
+				await node1Connection.query("UPDATE node1_2 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + movieId + ";")
 				
 				// update logs 
 				await nodeLogsConnection.query("UPDATE `node1_2_logs` SET `status` = 'write' WHERE `name` = ? AND `dest` = 'node1_2';", [movieName])
@@ -785,9 +798,9 @@ const controller = {
 				await node1Connection.query("UNLOCK TABLES;")
 		
 				// update logs
-				await nodeLogsConnection.query("UPDATE `node1_2` SET `status` = ? WHERE `name` = ? AND `dest` = 'node1_2';", ['committing', movieName])
+				await nodeLogsConnection.query("UPDATE `node1_2_logs` SET `status` = ? WHERE `name` = ? AND `dest` = 'node1_2';", ['committing', movieName])
 				console.log("Log updated to committing in node 1 table 2")
-				await nodeLogsConnection.query("UPDATE `node1_2` SET `status` = ? WHERE `name` = ? AND `dest` = 'node1_2';", ['committed', movieName])
+				await nodeLogsConnection.query("UPDATE `node1_2_logs` SET `status` = ? WHERE `name` = ? AND `dest` = 'node1_2';", ['committed', movieName])
 				console.log("Log updated to committed in node 1 table 2")
 				console.log("Inserted to node 1 table 2")
 		
@@ -814,11 +827,11 @@ const controller = {
 					await node3Connection.query("LOCK TABLES node3 write;")
 		
 					// insert in logs
-					await nodeLogsConnection.query("INSERT INTO `node3_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node3');")
+					await nodeLogsConnection.query("INSERT INTO `node3_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node3');")
 					console.log("Start log inserted to node3")
 		
 					// update movie
-					await node3Connection.query("UPDATE node3 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + data.id + ";")
+					await node3Connection.query("UPDATE node3 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + movieId + ";")
 					
 					// update logs 
 					await nodeLogsConnection.query("UPDATE `node3_logs` SET `status` = 'write' WHERE `name` = ? AND `dest` = 'node3';", [movieName])
@@ -854,10 +867,10 @@ const controller = {
 					try {
 						nodeLogsConnection = await mysql.createConnection(config.nodeLogsConn)
 		
-						await nodeLogsConnection.query("INSERT INTO `node3_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node3');")
+						await nodeLogsConnection.query("INSERT INTO `node3_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node3');")
 						console.log("Logs in node3_logs terminated")
 		
-						await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node1');")
+						await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'terminated', 'node1');")
 						console.log("Logs in node1_logs terminated")
 		
 					} catch(err) {
@@ -880,11 +893,11 @@ const controller = {
 					await node3Connection.query("LOCK TABLES node3 write;")
 		
 					// insert in logs
-					await nodeLogsConnection.query("INSERT INTO `node3_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node3');")
+					await nodeLogsConnection.query("INSERT INTO `node3_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start', 'node3');")
 					console.log("Start log inserted to node3")
 		
 					// update movie
-					await node3Connection.query("UPDATE node3 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + data.id + ";")
+					await node3Connection.query("UPDATE node3 SET `name` = '" + movieName + "'," + "`year` = " + movieYear + "," + "`rank` = " + movieRank + " WHERE id = " + movieId + ";")
 					
 					// update logs 
 					await nodeLogsConnection.query("UPDATE `node3_logs` SET `status` = 'write' WHERE `name` = ? AND `dest` = 'node3';", [movieName])
@@ -914,7 +927,7 @@ const controller = {
 					// log to node 1 na di gumana ung node 3, may unCOMMITted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
 					// create log in node1 na di pumasok sa node 3 ung insert, pero successful in node 1
 					// log na nag fail sa node 3
-					await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'committing', 'node3');")
+					await nodeLogsConnection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`, `dest`) VALUES ('update', '" + movieName + "'," + movieYear + "," + movieRank + ", 'committing', 'node3');")
 					console.log("Successful insert in node1 but unsuccessful in node3")
 				}
 			}
