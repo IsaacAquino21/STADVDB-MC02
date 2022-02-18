@@ -228,17 +228,23 @@ const controller = {
 				node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("set autocommit = 0;")
 				await node1Connection.query("START TRANSACTION;")
-				await node1Connection.query("lock tables node1 write;")
-				await node1Connection.query("INSERT INTO node1 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+				await node1Connection.query("INSERT INTO `node1_logs` (`operation`, `name`, `year`, `rank`, `status`) VALUES ('insert', '" + movieName + "'," + movieYear + "," + movieRank + ", 'start');")
+				console.log("Start log inserted to node 1 table 1")
+				await node1Connection.query("INSERT INTO `node1` (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
+				await node1Connection.query("UPDATE `node1_logs` SET `status` = 'write' WHERE `name` = '" + movieName + "';")
+				console.log("Log updated to write in node 1 table 1")
 				await node1Connection.query("COMMIT;")
-				await node1Connection.query("UNLOCK TABLES;")
+				await node1Connection.query("UPDATE `node1_logs` SET `status` = 'committing' WHERE `name` = '" + movieName + "';")
+				console.log("Log updated to committing in node 1 table 1")
+				await node1Connection.query("UPDATE `node1_logs` SET `status` = 'committed' WHERE `name` = '" + movieName + "';")
+				console.log("Log updated to committed in node 1 table 1")
 				console.log("Inserted to node 1 table 1")
 				node1Connection.end()
 
 				flag = true
 
 			} catch (err) {
-				console.log(err + "ERROR SA NODE 1")
+				console.log(err)
 				if (node1Connection != null) {
 					node1Connection.end()
 				}
