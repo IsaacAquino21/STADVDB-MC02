@@ -9,7 +9,7 @@ app.set('views', path.join(__dirname, '../views'));
 // get methods
 app.get('/', controller.getHome)
 app.get('/movie-page/:id/:year', controller.getMoviePage)
-
+app.get('/recovery', controller.getRecovery)
 app.get('/movie-add', controller.getMovieAdd)
 app.get('/error-500', controller.getError500)
 
