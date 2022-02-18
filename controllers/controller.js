@@ -29,7 +29,7 @@ const controller = {
 			// node1Connection.query("set autocommit = 0;")
 
 			// // start tx
-			// node1Connection.query("start transaction;")
+			// node1Connection.query("START TRANSACTION;")
 
 			// // 
 
@@ -89,7 +89,7 @@ const controller = {
 			try {
 				// throw Error // simulate node 1 down
 				const node1Connection = await mysql.createConnection(config.node1conn)
-				await node1Connection.query("start transaction;")
+				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1 read;")
 				const [rows, fields] = await node1Connection.query("SELECT * FROM node1 WHERE id = ? ;", [id])
 				await node1Connection.query("commit;")
@@ -113,7 +113,7 @@ const controller = {
 					// throw Error // simulate node 2 down
 					const node2Connection = await mysql.createConnection(config.node2conn)
 					await node2Connection.query("set autocommit = 0;")
-					await node2Connection.query("start transaction;")
+					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 read;")
 					const [rows, fields] = await node2Connection.query("SELECT * FROM node2 WHERE id = ?;", [id])
 					await node2Connection.query("commit;")
@@ -135,7 +135,7 @@ const controller = {
 			try {
 				// throw Error // simulate node 1 down
 				const node1Connection = await mysql.createConnection(config.node1conn)
-				await node1Connection.query("start transaction;")
+				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1_2 read;")
 				const [rows, fields] = node1Connection.query("SELECT * FROM node1_2 WHERE id = ?;", [id])
 				await node1Connection.query("commit;")
@@ -151,7 +151,7 @@ const controller = {
 				try {
 					const node3Connection = await mysql.createConnection(config.node3conn)
 					await node3Connection.query("set autocommit = 0;")
-					await node3Connection.query("start transaction;")
+					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 read;")
 					const [rows, fields] = await node3Connection.query("SELECT * FROM node3 WHERE id = ?;", [id])
 					await node3Connection.query("commit;")
@@ -202,7 +202,7 @@ const controller = {
 				// insert in node 1 table 1
 				const node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("set autocommit = 0;")
-				await node1Connection.query("start transaction;")
+				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1 write;")
 				await node1Connection.query("INSERT INTO node1 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
 				await node1Connection.query("commit;")
@@ -218,7 +218,7 @@ const controller = {
 				try {
 					const node2Connection = await mysql.createConnection(config.node2conn)
 					await node2Connection.query("set autocommit = 0;")
-					await node2Connection.query("start transaction;")
+					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
 					await node2Connection.query("commit;")
@@ -238,7 +238,7 @@ const controller = {
 				try {
 					const node2Connection = await mysql.createConnection(config.node2conn)
 					await node2Connection.query("set autocommit = 0;")
-					await node2Connection.query("start transaction;")
+					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
 					await node2Connection.query("commit;")
@@ -258,7 +258,7 @@ const controller = {
 			try {
 				const node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("set autocommit = 0;")
-				await node1Connection.query("start transaction;")
+				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1_2 write;")
 				await node1Connection.query("INSERT INTO node1_2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
 				await node1Connection.query("commit;")
@@ -271,7 +271,7 @@ const controller = {
 				try {
 					const node3Connection = await mysql.createConnection(config.node2conn)
 					await node3Connection.query("set autocommit = 0;")
-					await node3Connection.query("start transaction;")
+					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
 					await node3Connection.query("commit;")
@@ -291,7 +291,7 @@ const controller = {
 				try {
 					const node3Connection = await mysql.createConnection(config.node3conn)
 					await node3Connection.query("set autocommit = 0;")
-					await node3Connection.query("start transaction;")
+					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
 					await node3Connection.query("commit;")
@@ -329,7 +329,7 @@ const controller = {
 				// update node1
 				const node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("set autocommit = 0;")
-				await node1Connection.query("start transaction;")
+				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1 write;")
 				await node1Connection.query("UPDATE node1 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 				
@@ -347,7 +347,7 @@ const controller = {
 					// throw Error // simulate off node node 2
 					const node2Connection = await mysql.createConnection(config.node2conn)
 					await node2Connection.query("set autocommit = 0;")
-					await node2Connection.query("start transaction;")
+					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("UPDATE node2 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 					
@@ -368,7 +368,7 @@ const controller = {
 				try {
 					const node2Connection = await mysql.createConnection(config.node2conn)
 					await node2Connection.query("set autocommit = 0;")
-					await node2Connection.query("start transaction;")
+					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("UPDATE node2 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 					await node2Connection.query("commit;")
@@ -388,7 +388,7 @@ const controller = {
 				// update node1_2
 				const node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("set autocommit = 0;")
-				await node1Connection.query("start transaction;")
+				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1_2 write;")
 				await node1Connection.query("UPDATE node1_2 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 				
@@ -405,7 +405,7 @@ const controller = {
 				try {
 					const node3Connection = await mysql.createConnection(config.node3conn)
 					await node3Connection.query("set autocommit = 0;")
-					await node3Connection.query("start transaction;")
+					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("UPDATE node3 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 					
@@ -425,7 +425,7 @@ const controller = {
 				try {
 					const node3Connection = await mysql.createConnection(config.node3conn)
 					await node3Connection.query("set autocommit = 0;")
-					await node3Connection.query("start transaction;")
+					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("UPDATE node3 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 					await node3Connection.query("commit;")
@@ -452,7 +452,7 @@ const controller = {
 				// throw Error // simulate node 1 off
 				const node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("set autocommit = 0;")
-				await node1Connection.query("start transaction;")
+				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1 write;")
 				await node1Connection.query("DELETE FROM node1 WHERE id = " + id + ";")
 				await node1Connection.query("commit;")
@@ -469,7 +469,7 @@ const controller = {
 					// throw Error // simulate node 1 off
 					const node2Connection = await mysql.createConnection(config.node2conn)
 					await node2Connection.query("set autocommit = 0;")
-					await node2Connection.query("start transaction;")
+					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("DELETE FROM node2 WHERE id = " + id + ";")
 					await node2Connection.query("commit;")
@@ -487,7 +487,7 @@ const controller = {
 				try {
 					const node2Connection = await mysql.createConnection(config.node2conn)
 					await node2Connection.query("set autocommit = 0;")
-					await node2Connection.query("start transaction;")
+					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("DELETE FROM node2 WHERE id = " + id + ";")
 					await node2Connection.query("commit;")
@@ -510,7 +510,7 @@ const controller = {
 				console.log("CONNECTED")
 				await node1Connection.query("set autocommit = 0;")
 				console.log("AUTOCOMMIT")
-				await node1Connection.query("start transaction;")
+				await node1Connection.query("START TRANSACTION;")
 				console.log("START TX")
 				await node1Connection.query("lock tables node1_2 write;")
 				// console.log("LOCK TABLES")
@@ -532,7 +532,7 @@ const controller = {
 				try {
 					const node3Connection = await mysql.createConnection(config.node3conn)
 					await node3Connection.query("set autocommit = 0;")
-					await node3Connection.query("start transaction;")
+					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("DELETE FROM node3 WHERE id = " + id + ";")
 					await node3Connection.query("commit;")
@@ -550,7 +550,7 @@ const controller = {
 				try {
 					const node3Connection = await mysql.createConnection(config.node3conn)
 					await node3Connection.query("set autocommit = 0;")
-					await node3Connection.query("start transaction;")
+					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("DELETE FROM node3 WHERE id = " + id + ";")
 					await node3Connection.query("commit;")
