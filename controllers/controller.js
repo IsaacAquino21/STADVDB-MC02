@@ -92,8 +92,8 @@ const controller = {
 				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1 read;")
 				const [rows, fields] = await node1Connection.query("SELECT * FROM node1 WHERE id = ? ;", [id])
-				await node1Connection.query("commit;")
-				await node1Connection.query("unlock tables;")
+				await node1Connection.query("COMMIT;")
+				await node1Connection.query("UNLOCK TABLES;")
 
 				// const [rows, fields] = await connection.execute('SELECT * FROM `table` WHERE `name` = ? AND `age` > ?', ['Morty', 14]);
 
@@ -116,8 +116,8 @@ const controller = {
 					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 read;")
 					const [rows, fields] = await node2Connection.query("SELECT * FROM node2 WHERE id = ?;", [id])
-					await node2Connection.query("commit;")
-					await node2Connection.query("unlock tables;")
+					await node2Connection.query("COMMIT;")
+					await node2Connection.query("UNLOCK TABLES;")
 					console.log("Successfully queried in node2")
 
 					data.dataDB = rows[0]
@@ -138,8 +138,8 @@ const controller = {
 				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1_2 read;")
 				const [rows, fields] = node1Connection.query("SELECT * FROM node1_2 WHERE id = ?;", [id])
-				await node1Connection.query("commit;")
-				await node1Connection.query("unlock tables;")
+				await node1Connection.query("COMMIT;")
+				await node1Connection.query("UNLOCK TABLES;")
 
 				data.dataDB = rows[0]
 
@@ -154,8 +154,8 @@ const controller = {
 					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 read;")
 					const [rows, fields] = await node3Connection.query("SELECT * FROM node3 WHERE id = ?;", [id])
-					await node3Connection.query("commit;")
-					await node3Connection.query("unlock tables;")
+					await node3Connection.query("COMMIT;")
+					await node3Connection.query("UNLOCK TABLES;")
 					console.log("Successfully queried in node3")
 
 					data.dataDB = rows[0]
@@ -205,8 +205,8 @@ const controller = {
 				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1 write;")
 				await node1Connection.query("INSERT INTO node1 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
-				await node1Connection.query("commit;")
-				await node1Connection.query("unlock tables;")
+				await node1Connection.query("COMMIT;")
+				await node1Connection.query("UNLOCK TABLES;")
 				console.log("Inserted to node 1 table 1")
 				node1Connection.end()
 
@@ -221,13 +221,13 @@ const controller = {
 					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
-					await node2Connection.query("commit;")
-					await node2Connection.query("unlock tables;")
+					await node2Connection.query("COMMIT;")
+					await node2Connection.query("UNLOCK TABLES;")
 					console.log("Inserted to node 2, error node 1")
 
 					node2Connection.end()
 
-					// create log to put to node 2 na uncommitted ung last query, tas after, query in node 1 pag naka recover na
+					// create log to put to node 2 na unCOMMITted ung last query, tas after, query in node 1 pag naka recover na
 
 				} catch (err) {
 					res.redirect('/error-500')
@@ -241,13 +241,13 @@ const controller = {
 					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("INSERT INTO node2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
-					await node2Connection.query("commit;")
-					await node2Connection.query("unlock tables;")
+					await node2Connection.query("COMMIT;")
+					await node2Connection.query("UNLOCK TABLES;")
 					console.log("Inserted to node 2 no error sa node 1")
 
 					node2Connection.end()
 				} catch (err) {
-					// log to node 1 na di gumana ung node 2, may uncommitted sa node 2, node 1 = on
+					// log to node 1 na di gumana ung node 2, may unCOMMITted sa node 2, node 1 = on
 
 				}
 			}
@@ -261,8 +261,8 @@ const controller = {
 				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1_2 write;")
 				await node1Connection.query("INSERT INTO node1_2 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
-				await node1Connection.query("commit;")
-				await node1Connection.query("unlock tables;")
+				await node1Connection.query("COMMIT;")
+				await node1Connection.query("UNLOCK TABLES;")
 				console.log("Inserted to node 1 table 2")
 				node1Connection.end()
 
@@ -274,8 +274,8 @@ const controller = {
 					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
-					await node3Connection.query("commit;")
-					await node3Connection.query("unlock tables;")
+					await node3Connection.query("COMMIT;")
+					await node3Connection.query("UNLOCK TABLES;")
 					console.log("Inserted to node 3 error node 1")
 
 					node3Connection.end()
@@ -294,13 +294,13 @@ const controller = {
 					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("INSERT INTO node3 (`name`, `year`, `rank`) values ('" + movieName + "'," + movieYear + "," + movieRank + ");")
-					await node3Connection.query("commit;")
-					await node3Connection.query("unlock tables;")
+					await node3Connection.query("COMMIT;")
+					await node3Connection.query("UNLOCK TABLES;")
 					console.log("Inserted to node 3 no errors sa node 1")
 
 					node3Connection.end()
 				} catch (err) {
-					// log to node 1 na di gumana ung node 3, may uncommitted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
+					// log to node 1 na di gumana ung node 3, may unCOMMITted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
 
 				}
 			}
@@ -333,8 +333,8 @@ const controller = {
 				await node1Connection.query("lock tables node1 write;")
 				await node1Connection.query("UPDATE node1 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 				
-				await node1Connection.query("commit;")
-				await node1Connection.query("unlock tables;")
+				await node1Connection.query("COMMIT;")
+				await node1Connection.query("UNLOCK TABLES;")
 				console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " FROM NODE1 TABLE1")
 				node1Connection.end()
 
@@ -351,8 +351,8 @@ const controller = {
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("UPDATE node2 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 					
-					await node2Connection.query("commit;")
-					await node2Connection.query("unlock tables;")
+					await node2Connection.query("COMMIT;")
+					await node2Connection.query("UNLOCK TABLES;")
 					console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " FROM NODE1 TABLE1")
 					node2Connection.end()
 
@@ -371,14 +371,14 @@ const controller = {
 					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("UPDATE node2 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
-					await node2Connection.query("commit;")
-					await node2Connection.query("unlock tables;")
+					await node2Connection.query("COMMIT;")
+					await node2Connection.query("UNLOCK TABLES;")
 					console.log("Updated node 2 no errors sa node 1")
 	
 					node2Connection.end()
 
 				} catch (err) {
-					// log to node 1 na di gumana ung node 3, may uncommitted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
+					// log to node 1 na di gumana ung node 3, may unCOMMITted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
 	
 				}
 			}
@@ -392,8 +392,8 @@ const controller = {
 				await node1Connection.query("lock tables node1_2 write;")
 				await node1Connection.query("UPDATE node1_2 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 				
-				await node1Connection.query("commit;")
-				await node1Connection.query("unlock tables;")
+				await node1Connection.query("COMMIT;")
+				await node1Connection.query("UNLOCK TABLES;")
 				console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " FROM NODE1_2 TABLE1")
 				node1Connection.end()
 
@@ -409,8 +409,8 @@ const controller = {
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("UPDATE node3 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
 					
-					await node3Connection.query("commit;")
-					await node3Connection.query("unlock tables;")
+					await node3Connection.query("COMMIT;")
+					await node3Connection.query("UNLOCK TABLES;")
 					console.log("SUCCESSFULLY UPDATED MOVIE ID = " + data.id + " FROM NODE1 TABLE1")
 					node3Connection.end()
 
@@ -428,14 +428,14 @@ const controller = {
 					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("UPDATE node3 SET `name` = '" + data.name + "'," + "`year` = " + data.year + "," + "`rank` = " + data.rank + " WHERE id = " + data.id + ";")
-					await node3Connection.query("commit;")
-					await node3Connection.query("unlock tables;")
+					await node3Connection.query("COMMIT;")
+					await node3Connection.query("UNLOCK TABLES;")
 					console.log("Inserted to node 3 no errors sa node 1")
 	
 					node3Connection.end()
 
 				} catch (err) {
-					// log to node 1 na di gumana ung node 3, may uncommitted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
+					// log to node 1 na di gumana ung node 3, may unCOMMITted sa node 3, node 1 = on, tas i query sa node 3 ung logged sa node 1
 					
 				}
 			}
@@ -452,11 +452,10 @@ const controller = {
 				// throw Error // simulate node 1 off
 				const node1Connection = await mysql.createConnection(config.node1conn)
 				await node1Connection.query("set autocommit = 0;")
-				await node1Connection.query("START TRANSACTION;")
 				await node1Connection.query("lock tables node1 write;")
 				await node1Connection.query("DELETE FROM node1 WHERE id = " + id + ";")
-				await node1Connection.query("commit;")
-				await node1Connection.query("unlock tables;")
+				await node1Connection.query("COMMIT;")
+				await node1Connection.query("UNLOCK TABLES;")
 				console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE1 TABLE1")
 				node1Connection.end()
 
@@ -472,8 +471,8 @@ const controller = {
 					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("DELETE FROM node2 WHERE id = " + id + ";")
-					await node2Connection.query("commit;")
-					await node2Connection.query("unlock tables;")
+					await node2Connection.query("COMMIT;")
+					await node2Connection.query("UNLOCK TABLES;")
 					console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE2")
 					node2Connection.end()
 	
@@ -490,14 +489,14 @@ const controller = {
 					await node2Connection.query("START TRANSACTION;")
 					await node2Connection.query("lock tables node2 write;")
 					await node2Connection.query("DELETE FROM node2 WHERE id = " + id + ";")
-					await node2Connection.query("commit;")
-					await node2Connection.query("unlock tables;")
+					await node2Connection.query("COMMIT;")
+					await node2Connection.query("UNLOCK TABLES;")
 					console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE2")
 					node2Connection.end()
 
 					res.send(true)
 				} catch(err) {
-					// log to node 1 na di gumana ung node 2, may uncommitted sa node 2, node 1 = on, tas i query sa node 2 ung logged sa node 1
+					// log to node 1 na di gumana ung node 2, may unCOMMITted sa node 2, node 1 = on, tas i query sa node 2 ung logged sa node 1
 				}
 				
 			}
@@ -509,16 +508,16 @@ const controller = {
 				const node1Connection = await mysql.createConnection(config.node1conn)
 				console.log("CONNECTED")
 				await node1Connection.query("set autocommit = 0;")
-				console.log("AUTOCOMMIT")
+				console.log("autocommit")
 				await node1Connection.query("START TRANSACTION;")
 				console.log("START TX")
 				await node1Connection.query("lock tables node1_2 write;")
 				// console.log("LOCK TABLES")
 				await node1Connection.query("DELETE FROM node1_2 WHERE id = " + id + ";")
 				console.log("DELETE QUERY")
-				await node1Connection.query("commit;")
+				await node1Connection.query("COMMIT;")
 				console.log("COMMIT")
-				await node1Connection.query("unlock tables;")
+				await node1Connection.query("UNLOCK TABLES;")
 				// console.log("UNLOCK TABLES")
 				console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE1 TABLE2")
 				node1Connection.end()
@@ -535,8 +534,8 @@ const controller = {
 					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("DELETE FROM node3 WHERE id = " + id + ";")
-					await node3Connection.query("commit;")
-					await node3Connection.query("unlock tables;")
+					await node3Connection.query("COMMIT;")
+					await node3Connection.query("UNLOCK TABLES;")
 					console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE3")
 					node3Connection.end()
 	
@@ -553,14 +552,14 @@ const controller = {
 					await node3Connection.query("START TRANSACTION;")
 					await node3Connection.query("lock tables node3 write;")
 					await node3Connection.query("DELETE FROM node3 WHERE id = " + id + ";")
-					await node3Connection.query("commit;")
-					await node3Connection.query("unlock tables;")
+					await node3Connection.query("COMMIT;")
+					await node3Connection.query("UNLOCK TABLES;")
 					console.log("SUCCESSFULLY DELETED MOVIE ID = " + id + " FROM NODE3")
 					node3Connection.end()
 
 					res.send(true)
 				} catch(err) {
-					// log to node 1 na di gumana ung node 2, may uncommitted sa node 2, node 1 = on, tas i query sa node 2 ung logged sa node 1
+					// log to node 1 na di gumana ung node 2, may unCOMMITted sa node 2, node 1 = on, tas i query sa node 2 ung logged sa node 1
 				}
 				
 			}
