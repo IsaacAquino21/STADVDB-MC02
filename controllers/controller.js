@@ -537,7 +537,6 @@ const controller = {
 
 				flag = true
 
-				res.send(true)
 			} catch (err) {
 				if (node1Connection != null) {
 					node1Connection.end()
@@ -608,7 +607,6 @@ const controller = {
 
 				flag = true
 
-				res.send(true)
 			} catch (err) {
 				if (node1Connection != null) {
 					node1Connection.end()
