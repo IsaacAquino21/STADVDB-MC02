@@ -1,15 +1,18 @@
 $(document).ready(function () {
     $('#rcvr1-btn').click(function (){
         alert('Button 1')
+
+        $.ajax({
+            type: 'POST',
+            url: '/recovery-post',
+            success: function (result) {
+                if (result == true) {
+                    window.location.replace("/")
+    
+                } else if(result == false) {
+                    window.location.replace("/error-500")
+                }
+            }
+        })
     })
-
-    $('#rcvr2-btn').click(function (){
-        alert('Button 2')
-    })
-
-    $('#rcvr3-btn').click(function (){
-        alert('Button 3')
-    })
-
-
 });

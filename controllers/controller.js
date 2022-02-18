@@ -595,6 +595,7 @@ const controller = {
 		var node1Connection;
 		var node2Connection;
 		var node3Connection;
+		var nodeLogsConnection
 
 		// + logic, check what yr < 1980, and >- 1980
 
@@ -968,6 +969,7 @@ const controller = {
 		var node1Connection
 		var node2Connection
 		var node3Connection
+		var nodeLogsConnection
 
 		// delete from node 1
 		if (movieYear < 1980) {
@@ -1349,7 +1351,198 @@ const controller = {
 		}
 
 		res.render('recovery', data)
+	},
+
+	postRecovery: async (req, res) => {
+		// find status na may committing
+		// find kung saang destination, tas write dun
+		var node1Connection
+		var node2Connection
+		var node3Connection
+		var nodeLogsConnection
+		var flag = true
+
+		try {
+			// RECOVER NODE 1
+			// check node 2 
+			nodeLogsConnection = await mysql.createConnection(config.nodeLogsConn)
+			const [rows1, fields1] = await nodeLogsConnection.query("SELECT * FROM `node2_logs` WHERE `status` = ? AND `dest` = ?;", ['committing', 'node1'])
+
+			// put in node 1 table 1
+			node1Connection = await mysql.createConnection(config.node1conn)
+			node2Connection = await mysql.createConnection(config.node2conn)
+			node3Connection = await mysql.createConnection(config.node3conn)
+
+			rows1.forEach(e => {
+				if(e.operation == "insert") {
+					node1Connection.query("INSERT INTO `node1` (`name`, `year`, `rank`) VALUES (?, ?, ?);", [e.name, e.year, e.rank])
+					nodeLogsConnection.query("UPDATE `node2_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+
+					console.log("[RECOVERY] INSERTED IN NODE 1 TABLE 1")
+				} else if (e.operation == "update") {
+					node1Connection.query("UPDATE `node1` SET `rank` = ? WHERE `name` = ?;", [e.rank, e.name])
+					nodeLogsConnection.query("UPDATE `node2_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+					node2Connection.query("UPDATE `node2` SET `rank` = ? WHERE `name` = ?;", [e.rank, e.name])
+					
+					console.log("[RECOVERY] UPDATED IN NODE 1 TABLE 1")
+				} else if(e.operation == "delete") {
+					node1Connection.query("DELETE FROM `node1` WHERE `name` = ?;", [e.name])
+					nodeLogsConnection.query("UPDATE `node2_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+					node2Connection.query("DELETE FROM `node2` WHERE `name` = ?;", [e.name])
+
+					console.log("[RECOVERY] DELETED IN NODE 1 TABLE 1")
+				}
+			})
+
+			// check node 3
+			const [rows2, fields2] = await nodeLogsConnection.query("SELECT * FROM `node3_logs` WHERE `status` = ? AND `dest` = ?;", ['committing', 'node1_2'])
+
+			// put in node 1 table 2
+			rows2.forEach(e => {
+				if(e.operation == "insert") {
+					node1Connection.query("INSERT INTO `node1_2` (`name`, `year`, `rank`) VALUES (?, ?, ?);", [e.name, e.year, e.rank])
+					nodeLogsConnection.query("UPDATE `node3_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+
+					console.log("[RECOVERY] INSERTED IN NODE 1 TABLE 2")
+				} else if (e.operation == "update") {
+					node1Connection.query("UPDATE `node1_2` SET `rank` = ? WHERE `name` = ?;", [e.rank, e.name])
+					nodeLogsConnection.query("UPDATE `node3_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+					node3Connection.query("UPDATE `node3` SET `rank` = ? WHERE `name` = ?;", [e.rank, e.name])
+
+					console.log("[RECOVERY] UPDATED IN NODE 1 TABLE 2")
+				} else if(e.operation == "delete") {
+					node1Connection.query("DELETE FROM `node1_2` WHERE `name` = ?;", [e.name])
+					nodeLogsConnection.query("UPDATE `node3_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+					node3Connection.query("DELETE FROM `node3` WHERE `name` = ?;", [e.name])
+
+					console.log("[RECOVERY] DELETED IN NODE 1 TABLE 2")
+				}
+			})
+		} catch(err) {
+			if(node1Connection != null) {
+				node1Connection.end()
+			}
+
+			if(nodeLogsConnection != null) {
+				nodeLogsConnection.end()
+			}
+
+			if(node2Connection != null) {
+				node2Connection.end()
+			}
+
+			if(node3Connection != null) {
+				node3Connection.end()
+			}
+
+			console.log(err)
+
+			flag = false
+		}
+
+
+		// RECOVER NODE 2
+		try {
+			// check node 1 table 1 logs
+			nodeLogsConnection = await mysql.createConnection(config.nodeLogsConn)
+			const [rows3, fields3] = await nodeLogsConnection.query("SELECT * FROM `node1_logs` WHERE `status` = ? AND `dest` = ?;", ['committing', 'node2'])
+
+			node1Connection = await mysql.createConnection(config.node1conn)
+			node2Connection = await mysql.createConnection(config.node2conn)
+
+			rows3.forEach(e => {
+				if(e.operation == "insert") {
+					node2Connection.query("INSERT INTO `node2` (`name`, `year`, `rank`) VALUES (?, ?, ?);", [e.name, e.year, e.rank])
+					nodeLogsConnection.query("UPDATE `node1_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+
+					console.log("[RECOVERY] INSERTED IN NODE 2")
+				} else if (e.operation == "update") {
+					node2Connection.query("UPDATE `node2` SET `rank` = ? WHERE `name` = ?;", [e.rank, e.name])
+					nodeLogsConnection.query("UPDATE `node1_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+					node1Connection.query("UPDATE `node1` SET `rank` = ? WHERE `name` = ?;", [e.rank, e.name])
+
+					console.log("[RECOVERY] UPDATED IN NODE 2")
+				} else if(e.operation == "delete") {
+					node2Connection.query("DELETE FROM `node2` WHERE `name` = ?;", [e.name])
+					nodeLogsConnection.query("UPDATE `node1_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+					node1Connection.query("DELETE FROM `node1` WHERE `name` = ?;", [e.name])
+
+					console.log("[RECOVERY] DELETED IN NODE 2")
+				}
+			})
+
+		} catch(err) {
+			if(node1Connection != null) {
+				node1Connection.end()
+			}
+
+			if(nodeLogsConnection != null) {
+				nodeLogsConnection.end()
+			}
+
+			if(node2Connection != null) {
+				node2Connection.end()
+			}
+			console.log(err)
+
+			flag = false
+		}
+
+		// RECOVER NODE 3
+		try {
+			// check node 1 table 2 logs
+			nodeLogsConnection = await mysql.createConnection(config.nodeLogsConn)
+			const [rows4, fields3] = await nodeLogsConnection.query("SELECT * FROM `node1_logs` WHERE `status` = ? AND `dest` = ?;", ['committing', 'node2'])
+
+			node1Connection = await mysql.createConnection(config.node1conn)
+			node3Connection = await mysql.createConnection(config.node3conn)
+
+			rows4.forEach(e => {
+				if(e.operation == "insert") {
+					node3Connection.query("INSERT INTO `node3` (`name`, `year`, `rank`) VALUES (?, ?, ?);", [e.name, e.year, e.rank])
+					nodeLogsConnection.query("UPDATE `node1_2_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+
+					console.log("[RECOVERY] INSERTED IN NODE 3")
+				} else if (e.operation == "update") {
+					node3Connection.query("UPDATE `node3` SET `rank` = ? WHERE `name` = ?;", [e.rank, e.name])
+					nodeLogsConnection.query("UPDATE `node1_2_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+					node1Connection.query("UPDATE `node1_2` SET `rank` = ? WHERE `name` = ?;", [e.rank, e.name])
+
+					console.log("[RECOVERY] UPDATED IN NODE 3")
+				} else if(e.operation == "delete") {
+					node3Connection.query("DELETE FROM `node3` WHERE `name` = ?;", [e.name])
+					nodeLogsConnection.query("UPDATE `node1_2_logs` SET `status` = ? WHERE `name` = ?;", ['committed', e.name])
+					node1Connection.query("DELETE FROM `node1_2` WHERE `name` = ?;", [e.name])
+
+					console.log("[RECOVERY] DELETED IN NODE 3")
+				}
+			})
+
+		} catch(err) {
+			if(node1Connection != null) {
+				node1Connection.end()
+			}
+
+			if(nodeLogsConnection != null) {
+				nodeLogsConnection.end()
+			}
+
+			if(node3Connection != null) {
+				node3Connection.end()
+			}
+			console.log(err)
+
+			flag = false
+		}
+
+		if(flag) {
+			res.send(true)
+		} else if(!flag) {
+			res.send(false)
+		}
 	}
+
+
 }
 
 module.exports = controller

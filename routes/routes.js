@@ -18,6 +18,7 @@ app.get('/error-500', controller.getError500)
 app.post('/add-movie', controller.postAddMovie)
 app.post('/update-movie', controller.postUpdateMovie)
 app.post('/delete-movie', controller.postDeleteMovie)
+app.post('/recovery-post', controller.postRecovery)
 
 
 // post methods
