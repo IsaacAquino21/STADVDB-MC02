@@ -21,9 +21,13 @@ const controller = {
 		let n2query = "SELECT * FROM " + n2Name + ";"
 		let n3query = "SELECT * FROM " + n3Name + ";"
 
+		var node1Connection
+		var node2Connection
+		var node3Connection
+
 
 		try {
-			const node1Connection = await mysql.createConnection(config.node1conn)
+			node1Connection = await mysql.createConnection(config.node1conn)
 
 			// // set autocommit to 0
 			// node1Connection.query("set autocommit = 0;")
@@ -43,14 +47,19 @@ const controller = {
 			console.log("CONNECTED TO NODE 1")
 
 		} catch (err) {
-			node1Connection.end()
+			if(node1Connection != null) {
+				node1Connection.end()
+			}
+			
 			// goto node 2
 			try {
-				const node2Connection = await mysql.createConnection(config.node2conn)
+				node2Connection = await mysql.createConnection(config.node2conn)
 				const qResult3 = await node2Connection.query(n2query)
+
+				
 				node2Connection.end()
 
-				const node3Connection = await mysql.createConnection(config.node3conn)
+				node3Connection = await mysql.createConnection(config.node3conn)
 				const qResult4 = await node3Connection.query(n3query)
 				node3Connection.end()
 
@@ -60,7 +69,14 @@ const controller = {
 				console.log("CONNECTED TO NODE 2 AND 3")
 
 			} catch (err) {
-				node3Connection.end()
+				if(node2Connection != null) {
+					node2Connection.end()
+				}
+
+				if(node3Connection != null) {
+					node3Connection.end()
+				}
+				
 				console.log(err)
 			}
 		}
